@@ -1,4 +1,3 @@
-/* global module:false */
 module.exports = function(grunt) {
 	var port = grunt.option('port') || 8000;
 	var root = grunt.option('root') || '.';
