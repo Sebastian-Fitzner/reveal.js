@@ -2123,8 +2123,193 @@ Can you see already the power?!
 
 --
 
+Callback hell is solved, Promises are there ...
 
+![but](https://media.giphy.com/media/l2JI84kB30Gypc9ig/giphy.gif)
 
+--
 
+We cannot come around: 
+- nesting
+- and a bit of ugliness
 
+--
+
+And we have difficulties to deal with: 
+
+- Conditionals 
+- Flattening 
+    - thinking about intermediate values
+- Error stacks
+- Debugging
+
+--
+
+``` js 
+
+// Error Handling 
+const makeRequest = () => {
+  try {
+    getJSON()
+      .then(result => {
+        // this parse may fail
+        const data = JSON.parse(result)
+        console.log(data)
+      })
+      // uncomment this block to handle asynchronous errors
+      // .catch((err) => {
+      //   console.log(err)
+      // })
+  } catch (err) {
+    console.log(err)
+  }
+}
+
+// Conditionals
+const makeRequest = () => {
+  return getJSON()
+    .then(data => {
+      if (data.needsAnotherRequest) {
+        return makeAnotherRequest(data)
+          .then(moreData => {
+            console.log(moreData)
+            return moreData
+          })
+      } else {
+        console.log(data)
+        return data
+      }
+    })
+}
+
+// Intermediate values
+const makeRequest = () => {
+  return promise1()
+    .then(value1 => {
+      // do something
+      return promise2(value1)
+        .then(value2 => {
+          // do something          
+          return promise3(value1, value2)
+        })
+    })
+}
+
+// Flattening of intermediate values
+const makeRequest = () => {
+  return promise1()
+    .then(value1 => {
+      // do something
+      return Promise.all([value1, promise2(value1)])
+    })
+    .then(([value1, value2]) => {
+      // do something          
+      return promise3(value1, value2)
+    })
+}
+
+// Error Stack
+const makeRequest = () => {
+  return callAPromise()
+    .then(() => callAPromise())
+    .then(() => callAPromise())
+    .then(() => callAPromise())
+    .then(() => callAPromise())
+    .then(() => {
+      throw new Error("oops");
+    })
+}
+
+makeRequest()
+  .catch(err => {
+    console.log(err);
+    // output
+    // Error: oops at callAPromise.then.then.then.then.then (index.js:8:13)
+  })
+```
  
+--
+
+Await & Async helps you that your asynchronous code looks and behaves like synchronous.
+
+-- 
+
+Async/await is actually built on top of promises. It cannot be used with plain callbacks or node callbacks.
+
+--
+
+Async/await is, like promises, non blocking.
+
+--
+
+Let's see a rewrite of the previous examples: 
+
+``` js 
+
+// Error Handling 
+const makeRequest = async () => {
+  try {
+    // this parse may fail
+    const data = JSON.parse(await getJSON())
+    console.log(data)
+  } catch (err) {
+    console.log(err)
+  }
+}
+
+// Conditionals
+const makeRequest = async () => {
+  const data = await getJSON()
+  if (data.needsAnotherRequest) {
+    const moreData = await makeAnotherRequest(data);
+    console.log(moreData)
+    return moreData
+  } else {
+    console.log(data)
+    return data    
+  }
+}
+
+// Intermediate values
+const makeRequest = async () => {
+  const value1 = await promise1()
+  const value2 = await promise2(value1)
+  return promise3(value1, value2)
+}
+
+// Error Stack
+onst makeRequest = async () => {
+  await callAPromise()
+  await callAPromise()
+  await callAPromise()
+  await callAPromise()
+  await callAPromise()
+  throw new Error("oops");
+}
+
+makeRequest()
+  .catch(err => {
+    console.log(err);
+    // output
+    // Error: oops at makeRequest (index.js:7:9)
+  })
+```
+ 
+---
+
+### Exercise 1
+
+Rewrite your promises to async/await syntax. 
+
+--
+
+### Exercise 2
+
+Update your RenderComponent class with the following option: 
+- provide multiple image links as parameter at initialize process
+- fetch data by using the links in the class 
+- use async/await 
+- render the template based on the data
+
+---
+
